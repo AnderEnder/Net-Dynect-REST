@@ -249,6 +249,7 @@ sub delete {
         operation => 'delete',
         service   => __PACKAGE__->_service_base_uri . '/' . $self->zone . '/' . $self->fqdn . '/' . $self->record_id
     );
+
     my $response = $self->{connection}->execute($request);
     $self->last_response($response);
     if ( $response->status =~ /^success$/i ) {
@@ -258,9 +259,40 @@ sub delete {
         return 1;
     }
     else {
-        printf "%s\n", $response->msgs->[0]->info if defined $response->msgs;
-	return 0;
+        carp "%s\n", $response->msgs->[0]->info if defined $response->msgs;
+	    return 0;
     }
+}
+
+=item $arecord->update();
+
+This will update the ARecord resource. 
+ You need to already populate the B<zone>, B<fqdn>, and B<record_id> attributes with the correct data
+
+=cut
+
+sub update {
+    my $self = shift;
+    my %args = @_;
+
+    return unless defined $self->{connection};
+    return unless defined $self->zone;
+    return unless defined $self->fqdn && $self->record_id;
+
+    my $request = Net::Dynect::REST::Request->new(
+        operation => 'update',
+        service   => __PACKAGE__->_service_base_uri . '/' . $self->zone . '/' . $self->fqdn . '/' . $self->record_id,
+        params    => { rdata => $self->rdata->rdata, ttl => $args{ttl} || 0 },
+    );
+
+    my $response = $self->{connection}->execute($request);
+    $self->last_response($response);
+    if ( !$response->status =~ /^success$/i ) {
+        carp sprintf( "%s\n", $response->msgs->[0]->info ) if defined $response->msgs;
+        return 0;
+    }
+
+    return 1;
 }
 
 =back
