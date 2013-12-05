@@ -233,6 +233,13 @@ sub save {
     return 1;
 }
 
+=item $arecord->delete();
+
+This will delete the ARecord resource. 
+ You need to already populate the B<zone>, B<fqdn>, and B<record_id> attributes with the correct data
+
+=cut
+
 sub delete {
     my $self = shift;
     return unless defined $self->{connection};
